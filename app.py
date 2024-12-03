@@ -46,69 +46,84 @@ def main():
         st.error(f"Error selecting model: {e}")
         return
 
-    # Image input from user
-    uploaded_image = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
+    # Image input from user or camera input
+    image_source = st.radio("Select Input", ("Upload Image", "Take a Photo"))
 
-    if uploaded_image is not None:
-        # Read the uploaded image
-        image = np.array(bytearray(uploaded_image.read()), dtype=np.uint8)
-        frame = cv2.imdecode(image, cv2.IMREAD_COLOR)
+    if image_source == "Upload Image":
+        uploaded_image = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
 
-        # Process the image
-        data_aux = []
-        x_ = []
-        y_ = []
+        if uploaded_image is not None:
+            image = np.array(bytearray(uploaded_image.read()), dtype=np.uint8)
+            frame = cv2.imdecode(image, cv2.IMREAD_COLOR)
+            st.image(frame, caption="Uploaded Image", use_column_width=True)
+            process_image(frame, current_model, current_labels)
+    
+    elif image_source == "Take a Photo":
+        # Camera input for capturing an image
+        img = st.camera_input("Click to Take a Photo")
 
-        H, W, _ = frame.shape
-        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        if img is not None:
+            frame = np.array(bytearray(img.read()), dtype=np.uint8)
+            frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
+            st.image(frame, caption="Captured Image", use_column_width=True)
+            process_image(frame, current_model, current_labels)
 
-        # Hands detection setup
-        hands = mp_hands.Hands(static_image_mode=True, min_detection_confidence=0.3)
-        results = hands.process(frame_rgb)
+def process_image(frame, current_model, current_labels):
+    # Process the image
+    data_aux = []
+    x_ = []
+    y_ = []
 
-        if results.multi_hand_landmarks:
-            hand_landmarks = results.multi_hand_landmarks[0]
+    H, W, _ = frame.shape
+    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-            # Draw hand landmarks
-            mp_drawing.draw_landmarks(
-                frame,
-                hand_landmarks,
-                mp_hands.HAND_CONNECTIONS,
-                mp_drawing_styles.get_default_hand_landmarks_style(),
-                mp_drawing_styles.get_default_hand_connections_style())
+    # Hands detection setup
+    hands = mp_hands.Hands(static_image_mode=True, min_detection_confidence=0.3)
+    results = hands.process(frame_rgb)
 
-            # Extract hand landmark coordinates
-            for i in range(len(hand_landmarks.landmark)):
-                x = hand_landmarks.landmark[i].x
-                y = hand_landmarks.landmark[i].y
-                x_.append(x)
-                y_.append(y)
+    if results.multi_hand_landmarks:
+        hand_landmarks = results.multi_hand_landmarks[0]
 
-            # Normalize coordinates
-            for i in range(len(hand_landmarks.landmark)):
-                x = hand_landmarks.landmark[i].x
-                y = hand_landmarks.landmark[i].y
-                data_aux.append(x - min(x_))
-                data_aux.append(y - min(y_))
+        # Draw hand landmarks
+        mp_drawing.draw_landmarks(
+            frame,
+            hand_landmarks,
+            mp_hands.HAND_CONNECTIONS,
+            mp_drawing_styles.get_default_hand_landmarks_style(),
+            mp_drawing_styles.get_default_hand_connections_style())
 
-            # Bounding box
-            x1 = int(min(x_) * W) - 10
-            y1 = int(min(y_) * H) - 10
-            x2 = int(max(x_) * W) - 10
-            y2 = int(max(y_) * H) - 10
+        # Extract hand landmark coordinates
+        for i in range(len(hand_landmarks.landmark)):
+            x = hand_landmarks.landmark[i].x
+            y = hand_landmarks.landmark[i].y
+            x_.append(x)
+            y_.append(y)
 
-            # Prediction
-            prediction = current_model.predict([np.asarray(data_aux)])
-            predicted_character = current_labels[int(prediction[0])]
+        # Normalize coordinates
+        for i in range(len(hand_landmarks.landmark)):
+            x = hand_landmarks.landmark[i].x
+            y = hand_landmarks.landmark[i].y
+            data_aux.append(x - min(x_))
+            data_aux.append(y - min(y_))
 
-            # Draw prediction
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 4)
-            cv2.putText(frame, predicted_character, (x1, y1 - 10), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 1.3, (255, 255, 255), 3, cv2.LINE_AA)
+        # Bounding box
+        x1 = int(min(x_) * W) - 10
+        y1 = int(min(y_) * H) - 10
+        x2 = int(max(x_) * W) - 10
+        y2 = int(max(y_) * H) - 10
 
-        # Convert frame to RGB for Streamlit display
-        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        st.image(frame_rgb, caption="Processed Image", use_column_width=True)
+        # Prediction
+        prediction = current_model.predict([np.asarray(data_aux)])
+        predicted_character = current_labels[int(prediction[0])]
+
+        # Draw prediction
+        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 4)
+        cv2.putText(frame, predicted_character, (x1, y1 - 10), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 1.3, (255, 255, 255), 3, cv2.LINE_AA)
+
+    # Convert frame to RGB for Streamlit display
+    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    st.image(frame_rgb, caption="Processed Image", use_column_width=True)
 
 if __name__ == "__main__":
     main()
