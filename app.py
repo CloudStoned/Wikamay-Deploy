@@ -64,7 +64,6 @@ def main():
         if img is not None:
             frame = np.array(bytearray(img.read()), dtype=np.uint8)
             frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
-            st.image(frame, caption="Captured Image", use_container_width =True)
             process_image(frame, current_model, current_labels)
 
 def process_image(frame, current_model, current_labels):
