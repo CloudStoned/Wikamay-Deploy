@@ -1,8 +1,9 @@
 # Python Version 3.9.12
 
-opencv-python
-mediapipe
-scikit-learn
-numpy
-flask
-streamlit
+opencv-contrib-python==4.10.0.84
+opencv-python==4.10.0.84
+mediapipe==0.10.18
+scikit-learn==1.5.2
+numpy==1.26.4
+flask==3.1.0
+streamlit==1.40.2
