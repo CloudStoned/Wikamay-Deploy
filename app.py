@@ -3,6 +3,7 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import pickle
+import json
 
 # Load the labels and models
 def load_labels(file_path):
