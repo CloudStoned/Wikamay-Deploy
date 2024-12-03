@@ -55,7 +55,6 @@ def main():
         if uploaded_image is not None:
             image = np.array(bytearray(uploaded_image.read()), dtype=np.uint8)
             frame = cv2.imdecode(image, cv2.IMREAD_COLOR)
-            st.image(frame, caption="Uploaded Image", use_column_width=True)
             process_image(frame, current_model, current_labels)
     
     elif image_source == "Take a Photo":
@@ -65,7 +64,7 @@ def main():
         if img is not None:
             frame = np.array(bytearray(img.read()), dtype=np.uint8)
             frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
-            st.image(frame, caption="Captured Image", use_column_width=True)
+            st.image(frame, caption="Captured Image", use_container_width =True)
             process_image(frame, current_model, current_labels)
 
 def process_image(frame, current_model, current_labels):
@@ -117,13 +116,13 @@ def process_image(frame, current_model, current_labels):
         predicted_character = current_labels[int(prediction[0])]
 
         # Draw prediction
-        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 4)
+        cv2.rectangle(frame, (x1, y1), (x2, y2), (255,0,0), 4)
         cv2.putText(frame, predicted_character, (x1, y1 - 10), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 1.3, (255, 255, 255), 3, cv2.LINE_AA)
+                    cv2.FONT_HERSHEY_SIMPLEX, 1.3, (0,50,0), 3, cv2.LINE_AA)
 
     # Convert frame to RGB for Streamlit display
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    st.image(frame_rgb, caption="Processed Image", use_column_width=True)
+    st.image(frame_rgb, caption="Processed Image", use_container_width =True)
 
 if __name__ == "__main__":
     main()
