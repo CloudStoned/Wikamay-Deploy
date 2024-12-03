@@ -1,7 +1,7 @@
 # Python Version 3.9.12
 
 opencv-contrib-python==4.10.0.84
-opencv-python==4.10.0.84
+opencv-python-headless==4.10.84
 mediapipe==0.10.18
 scikit-learn==1.5.2
 numpy==1.26.4
