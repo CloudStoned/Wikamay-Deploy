@@ -43,7 +43,7 @@ current_labels = alph_labels if model_type == "Alphabet" else num_labels
 
 # Start video stream
 run = st.checkbox("Run Camera Stream")
-FRAME_WINDOW = st.image([])
+FRAME_WINDOW = st.camera_input()
 
 if run:
     camera = cv2.VideoCapture(0)
@@ -115,4 +115,3 @@ if run:
 
         # Release the camera when done
         camera.release()
-
