@@ -5,3 +5,4 @@ mediapipe
 scikit-learn
 numpy
 flask
+streamlit

@@ -50,11 +50,12 @@
     </div>
     <div id="current-model"></div>
     <div id="video-container">
-        <img id="video-feed" width="640" height="480">
+        <video id="video-feed" autoplay muted width="640" height="480"></video>
     </div>
 
     <script>
         let currentModel = '';
+        const videoFeed = document.getElementById('video-feed');
 
         function loadModel(modelType) {
             if (currentModel === modelType) return;
@@ -66,9 +67,9 @@
                         currentModel = modelType;
                         updateModelDisplay();
                         showBlackFrame();
+                        startCamera();
                         setTimeout(() => {
                             document.getElementById('video-container').style.display = 'block';
-                            document.getElementById('video-feed').src = "{{ url_for('video_feed') }}?" + new Date().getTime();
                         }, 100);
                     } else {
                         alert('Failed to load model');
@@ -82,11 +83,20 @@
         }
 
         function showBlackFrame() {
-            const videoFeed = document.getElementById('video-feed');
             videoFeed.style.display = 'none';
             setTimeout(() => {
                 videoFeed.style.display = 'block';
             }, 50);
+        }
+
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                videoFeed.srcObject = stream;
+            } catch (error) {
+                alert('Camera access denied or unavailable.');
+                console.error('Error accessing camera:', error);
+            }
         }
     </script>
 </body>
