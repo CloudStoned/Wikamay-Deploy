@@ -62,7 +62,9 @@ def main():
         img = st.camera_input("Click to Take a Photo")
 
         if img is not None:
-            frame = np.array(bytearray(img.read()), dtype=np.uint8)
+            # Read the image from the camera input as a byte object
+            image_data = img.getvalue()
+            frame = np.frombuffer(image_data, dtype=np.uint8)
             frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
             process_image(frame, current_model, current_labels)
 
@@ -121,7 +123,7 @@ def process_image(frame, current_model, current_labels):
 
     # Convert frame to RGB for Streamlit display
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    st.image(frame_rgb, caption="Processed Image", use_container_width =True)
+    st.image(frame_rgb, caption="Processed Image", use_container_width=True)
 
 if __name__ == "__main__":
     main()
