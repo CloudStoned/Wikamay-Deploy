@@ -11,7 +11,6 @@ def load_labels(file_path):
         labels = json.load(json_file)
     return {int(k): v for k, v in labels.items()}
 
-# Add error handling for model and camera loading
 try:
     alph_labels = load_labels('./classes/ALPH_CLASSES.json')
     num_labels = load_labels('./classes/NUM_CLASSES.json')
@@ -51,10 +50,11 @@ def main():
     FRAME_WINDOW = st.image([])
     
     try:
-        camera = cv2.VideoCapture(0)
+        camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)  # Windows
         if not camera.isOpened():
             st.error("Unable to access camera. Please check camera permissions.")
             return
+        
     except Exception as e:
         st.error(f"Camera initialization error: {e}")
         return
