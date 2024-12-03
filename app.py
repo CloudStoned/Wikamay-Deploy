@@ -11,11 +11,17 @@ def load_labels(file_path):
         labels = json.load(json_file)
     return {int(k): v for k, v in labels.items()}
 
-alph_labels = load_labels('./classes/ALPH_CLASSES.json')
-num_labels = load_labels('./classes/NUM_CLASSES.json')
+# Add error handling for model and camera loading
+try:
+    alph_labels = load_labels('./classes/ALPH_CLASSES.json')
+    num_labels = load_labels('./classes/NUM_CLASSES.json')
 
-alph_model_dict = pickle.load(open('./models/alph_model.p', 'rb'))
-num_model_dict = pickle.load(open('./models/num_model.p', 'rb'))
+    alph_model_dict = pickle.load(open('./models/alph_model.p', 'rb'))
+    num_model_dict = pickle.load(open('./models/num_model.p', 'rb'))
+except Exception as e:
+    st.error(f"Error loading models: {e}")
+    alph_labels, num_labels = {}, {}
+    alph_model_dict, num_model_dict = {}, {}
 
 # Mediapipe setup
 mp_hands = mp.solutions.hands
@@ -29,17 +35,29 @@ def main():
     model_type = st.selectbox("Select Model", ["Alphabet", "Number"])
 
     # Load appropriate model
-    if model_type.lower() == "alphabet":
-        current_model = alph_model_dict['model']
-        current_labels = alph_labels
-    else:
-        current_model = num_model_dict['model']
-        current_labels = num_labels
+    try:
+        if model_type.lower() == "alphabet":
+            current_model = alph_model_dict['model']
+            current_labels = alph_labels
+        else:
+            current_model = num_model_dict['model']
+            current_labels = num_labels
+    except Exception as e:
+        st.error(f"Error selecting model: {e}")
+        return
 
     # Webcam input
     run = st.checkbox('Run')
     FRAME_WINDOW = st.image([])
-    camera = cv2.VideoCapture(0)
+    
+    try:
+        camera = cv2.VideoCapture(0)
+        if not camera.isOpened():
+            st.error("Unable to access camera. Please check camera permissions.")
+            return
+    except Exception as e:
+        st.error(f"Camera initialization error: {e}")
+        return
 
     # Hands detection setup
     hands = mp_hands.Hands(static_image_mode=True, min_detection_confidence=0.3)
